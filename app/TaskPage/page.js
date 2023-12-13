@@ -12,7 +12,7 @@ const MyCalendar = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const { deleteAllTasks, tasks, fetchData, user } = useTaskStore();
-  const url = process.env.WEBSITE_URL || "http://localhost:3000";
+
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
