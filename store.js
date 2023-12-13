@@ -17,8 +17,8 @@ const useTaskStore = create(
           ),
         })),
       deleteAllTasks: () => {
-        set({ tasks: [] }); // Clear the tasks in the state
-        localStorage.clear(); // Clear the entire localStorage
+        set({ tasks: [] });
+        localStorage.clear();
       },
       fetchData: async () => {
         try {
@@ -49,7 +49,10 @@ const useTaskStore = create(
         }
       },
       setUser: (user) => set({ user }),
-      deleteUser: () => set({ user: [] }),
+      deleteUser: () => {
+        set({ user: [] });
+        localStorage.clear();
+      },
     }),
     {
       name: "task-store",

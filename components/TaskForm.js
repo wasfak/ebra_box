@@ -34,7 +34,7 @@ const TaskForm = ({ onClose }) => {
 
     // Close the modal
 
-    const url = process.env.WEBSITE_URL || "http://localhost:3000";
+    const url = process.env.WEBSITE_URL;
 
     try {
       const res = await fetch(`${url}/api/createTask`, {

@@ -16,7 +16,7 @@ const MyCalendar = () => {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    if (!user) {
+    if (!user._id) {
       redirect("/");
     }
     setMounted(true);

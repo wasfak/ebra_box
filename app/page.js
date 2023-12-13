@@ -2,17 +2,22 @@
 
 import useTaskStore from "@/store";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 
 const Login = () => {
   const [email, setId] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setIsLoading] = useState();
-  const { deleteUser, fetchData } = useTaskStore();
+  const { deleteUser, fetchData, deleteAllTasks } = useTaskStore();
   const user = useTaskStore((store) => store.user);
 
   const router = useRouter();
+
+  useEffect(() => {
+    deleteAllTasks();
+    deleteUser();
+  }, []);
 
   const handleLogin = async (event) => {
     event.preventDefault();
