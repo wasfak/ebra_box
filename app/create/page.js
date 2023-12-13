@@ -9,17 +9,15 @@ const Login = () => {
   const [email, setId] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setIsLoading] = useState();
-  const { deleteUser, fetchData } = useTaskStore();
-  const user = useTaskStore((store) => store.user);
+  const { setUser, user } = useTaskStore;
 
   const router = useRouter();
-
   const handleLogin = async (event) => {
     event.preventDefault();
     setIsLoading(true);
 
     try {
-      if (!email || !password) {
+      if (!email || (!password && !loading)) {
         toast.error("Please enter email and password", {
           duration: 3000,
           style: {
@@ -27,9 +25,8 @@ const Login = () => {
             background: "red",
           },
         });
-        setIsLoading(false);
       } else {
-        const res = await fetch("/api/login", {
+        const res = await fetch("/api/newUser", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -37,55 +34,32 @@ const Login = () => {
           body: JSON.stringify({ email, password }),
         });
 
-        const data = await res.json();
-
-        switch (data.status) {
-          case 200:
-            // Login successful
-            // Redirect or handle as needed
+        if (res.ok) {
+          const data = await res.json();
+          if (data.status === 200) {
             useTaskStore.setState({ user: data.user });
-            fetchData();
-            router.push("/TaskPage");
-            break;
-
-          case 401:
-            // Incorrect password
-            toast.error("Wrong password!", {
+            toast.success("Email created successfully");
+            router.push("/");
+          } else {
+            toast.error(data.message, {
               duration: 3000,
               style: {
                 color: "black",
                 background: "red",
               },
             });
-            setPassword(""); // Clear the password field
-            break;
-
-          case 500:
-            // Server-side error
-            console.error("Error during login:", data.message);
-            toast.error("An unexpected error occurred", {
-              duration: 3000,
-              style: {
-                color: "black",
-                background: "red",
-              },
-            });
-            break;
-
-          default:
-            // User not found or other cases
-            toast.error(data.message || "Login failed", {
-              duration: 3000,
-              style: {
-                color: "black",
-                background: "red",
-              },
-            });
-            break;
+          }
+        } else {
+          toast.error("Something went wrong with the request", {
+            duration: 3000,
+            style: {
+              color: "black",
+              background: "red",
+            },
+          });
         }
       }
     } catch (error) {
-      console.error("Error during login:", error);
       toast.error("An unexpected error occurred", {
         duration: 3000,
         style: {
@@ -102,7 +76,7 @@ const Login = () => {
     <>
       <div className="flex justify-center h-screen">
         <div className=" p-6 mt-12 rounded-2xl border shadow-2xl w-[400px] h-[400px] flex flex-col justify-center items-center">
-          <h1>home page</h1>
+          <h1>sign up page</h1>
           <form className="w-full max-w-md " onSubmit={handleLogin}>
             <div className="mb-4 ">
               <label htmlFor="id" className="block text-gray-700 mb-2">
@@ -134,10 +108,10 @@ const Login = () => {
               type="submit"
               className="bg-[#b6373e] text-white p-2 rounded w-full mb-6"
             >
-              {loading ? "Logging" : "Login"}
+              {loading ? "Processing" : "Sign up"}
             </button>
           </form>
-          <button onClick={() => router.push("/create")}>Sign Up</button>
+          <button onClick={() => router.push("/")}>sign in</button>
         </div>
       </div>
     </>
