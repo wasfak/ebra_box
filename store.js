@@ -7,25 +7,33 @@ const useTaskStore = create(
     (set) => ({
       tasks: [],
       user: null,
+      totalDuration: 0, // Add a property to store the total duration
       addTask: (newTask) => {
-        set((state) => ({ tasks: [...state.tasks, newTask] }));
+        set((state) => ({
+          tasks: [...state.tasks, newTask],
+          totalDuration: state.totalDuration + calculateTaskDuration(newTask),
+        }));
       },
       updateTask: (taskId, updatedTask) =>
-        set((state) => ({
-          tasks: state.tasks.map((task) =>
+        set((state) => {
+          const updatedTasks = state.tasks.map((task) =>
             task.taskId === taskId ? { ...task, ...updatedTask } : task
-          ),
-        })),
+          );
+          return {
+            tasks: updatedTasks,
+            totalDuration: calculateTotalDuration(updatedTasks),
+          };
+        }),
       deleteAllTasks: () => {
-        set({ tasks: [] });
+        set({ tasks: [], totalDuration: 0 });
         localStorage.clear();
       },
       fetchData: async () => {
         try {
           const user = useTaskStore.getState().user;
 
-          if (!user) {
-            console.error("No user available");
+          if (!user || !user.email) {
+            console.error("No user or email available");
             return;
           }
 
@@ -34,7 +42,7 @@ const useTaskStore = create(
             headers: {
               "Content-Type": "application/json",
             },
-            body: JSON.stringify({ userId: user._id }),
+            body: JSON.stringify({ userId: user.email }),
           });
 
           if (!response.ok) {
@@ -43,14 +51,15 @@ const useTaskStore = create(
           }
 
           const data = await response.json();
-          set({ tasks: data.data });
+          const tasks = data.data;
+          set({ tasks, totalDuration: calculateTotalDuration(tasks) });
         } catch (error) {
           console.error("Error fetching data:", error);
         }
       },
-      setUser: (user) => set({ user }),
+      setUser: (user) => set({ user }), // Ensure you use the argument here
       deleteUser: () => {
-        set({ user: [] });
+        set({ user: null, totalDuration: 0 });
         localStorage.clear();
       },
     }),
@@ -60,5 +69,18 @@ const useTaskStore = create(
     }
   )
 );
+
+// Helper function to calculate the duration of a task
+const calculateTaskDuration = (task) => {
+  // Assuming taskDurationHours and taskDurationMinutes are strings
+  const hours = parseInt(task.taskDurationHours, 10) || 0;
+  const minutes = parseInt(task.taskDurationMinutes, 10) || 0;
+  return hours * 60 + minutes;
+};
+
+// Helper function to calculate the total duration of all tasks
+const calculateTotalDuration = (tasks) => {
+  return tasks.reduce((total, task) => total + calculateTaskDuration(task), 0);
+};
 
 export default useTaskStore;

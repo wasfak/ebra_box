@@ -20,7 +20,11 @@ const taskSchema = new mongoose.Schema({
   userId: {
     type: String,
   },
-  taskDuration: {
+  taskDurationHours: {
+    type: String,
+    required: true,
+  },
+  taskDurationMinutes: {
     type: String,
     required: true,
   },

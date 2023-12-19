@@ -36,7 +36,19 @@ export default function Task({ task, onEdit }) {
       </div>
       <div className="flex items-center justify-between w-full mt-2">
         <span className="">Urgency: {task.taskUrgency}</span>
-        <span className="mr-24">Duration: {task.taskDuration}</span>
+        {/* <span className="mr-24">Duration: {task.taskDuration}</span> */}
+        {Number(task.taskDurationHours) >= 1 ? (
+          <span className="mr-12">
+            Duration:{" "}
+            {Number(task.taskDurationHours) > 1
+              ? `${task.taskDurationHours} Hours ${task.taskDurationMinutes} minute`
+              : `1 Hour ${task.taskDurationMinutes} minute`}
+          </span>
+        ) : (
+          <span className="mr-12">
+            Duration: {task.taskDurationMinutes} minute
+          </span>
+        )}
       </div>
 
       {/* Edit Modal */}

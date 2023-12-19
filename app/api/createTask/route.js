@@ -8,11 +8,20 @@ export const POST = async (req) => {
     await db.connectDb();
 
     const body = await req.json();
-    const { taskName, taskDuration, taskUrgency, taskNote, userId } = body;
+
+    const {
+      taskName,
+      taskDurationHours,
+      taskDurationMinutes,
+      taskUrgency,
+      taskNote,
+      userId,
+    } = body;
 
     const newTask = new Task({
       taskName,
-      taskDuration,
+      taskDurationHours,
+      taskDurationMinutes,
       taskUrgency,
       taskNote,
       userId,

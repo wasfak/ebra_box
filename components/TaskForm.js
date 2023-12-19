@@ -1,37 +1,85 @@
 "use client";
 import useTaskStore from "@/store";
 import React, { useState } from "react";
+import toast from "react-hot-toast";
 
 const TaskForm = ({ onClose }) => {
-  const { addTask, fetchData, user } = useTaskStore();
+  const { addTask, fetchData, user, totalDuration } = useTaskStore();
+
   const [taskData, setTaskData] = useState({
     taskName: "",
-    taskDuration: "",
+    taskDurationHours: "",
+    taskDurationMinutes: "",
     taskUrgency: "medium",
     taskNote: "",
-    userId: user._id,
+    userId: user.email,
   });
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setTaskData((prevData) => ({
-      ...prevData,
-      [name]: value,
-    }));
+
+    if (name === "taskDurationHours" || name === "taskDurationMinutes") {
+      // Validate that the input is a number
+      if (!isNaN(value)) {
+        // Convert the value to a number
+        const numericValue = Number(value);
+
+        // Validate the range based on the input name
+        if (
+          name === "taskDurationHours" &&
+          numericValue >= 0 &&
+          numericValue <= 24
+        ) {
+          setTaskData((prevData) => ({
+            ...prevData,
+            [name]: String(numericValue),
+          }));
+        } else if (
+          name === "taskDurationMinutes" &&
+          numericValue >= 0 &&
+          numericValue <= 60
+        ) {
+          setTaskData((prevData) => ({
+            ...prevData,
+            [name]: String(numericValue),
+          }));
+        }
+      }
+    } else {
+      // Update other inputs directly
+      setTaskData((prevData) => ({
+        ...prevData,
+        [name]: value,
+      }));
+    }
   };
 
   const handleAddTask = async () => {
+    if (
+      Number(taskData.taskDurationHours) * 60 +
+        Number(taskData.taskDurationMinutes) +
+        totalDuration >
+      1440
+    ) {
+      return toast.error("Exceeding The day Limit Of Tasks!!!", {
+        duration: 3000,
+        style: {
+          color: "black",
+          background: "red",
+        },
+      });
+    }
     // Add the new task to the global state
     addTask(taskData);
 
     // Reset form fields after capturing the data
     setTaskData({
       taskName: "",
-      taskDuration: "",
+      taskDurationHours: "", // <-- Use the correct property name
+      taskDurationMinutes: "", // <-- Use the correct property name
       taskUrgency: "medium",
       taskNote: "",
     });
-
     // Close the modal
 
     try {
@@ -42,14 +90,15 @@ const TaskForm = ({ onClose }) => {
 
       const data = await res.json();
       if (data.message === "Added new Task") {
+        toast.success("Added new Task");
         fetchData();
         onClose();
       } else {
-        console.error("Failed to add task:", data.message);
+        toast.error("Failed to add task:", data.message);
         // Handle the case where adding the task failed
       }
     } catch (error) {
-      console.error("Error adding task:", error);
+      toast.error("Error adding task:", error);
       // Handle the error from the fetch request
     }
   };
@@ -80,18 +129,29 @@ const TaskForm = ({ onClose }) => {
       {/* Task Duration */}
       <div className="mb-4">
         <label
-          htmlFor="taskDuration"
-          className="block text-sm font-semibold text-gray-600"
+          htmlFor="taskDurationHours"
+          className="block text-sm font-semibold text-gray-600 mb-1"
         >
           Task Duration
         </label>
         <input
-          type="text"
-          id="taskDuration"
-          name="taskDuration"
-          value={taskData.taskDuration}
+          type="number"
+          id="taskDurationHours"
+          name="taskDurationHours"
+          value={taskData.taskDurationHours}
           onChange={handleInputChange}
-          className="w-full px-4 py-2 mt-2 border rounded-md focus:outline-none focus:border-blue-500"
+          placeholder="Hours"
+          className="w-1/2 px-4 py-2 border rounded-l-md focus:outline-none focus:border-blue-500"
+          required
+        />
+        <input
+          type="number"
+          id="taskDurationMinutes"
+          name="taskDurationMinutes"
+          value={taskData.taskDurationMinutes}
+          onChange={handleInputChange}
+          placeholder="Minutes"
+          className="w-1/2 px-4 py-2 border rounded-r-md focus:outline-none focus:border-blue-500"
           required
         />
       </div>
